@@ -14,7 +14,7 @@ export default function Home() {
   const [copyButtonText, setCopyButtonText] = useState('Copy');
   const { fileContent, processFile } = useFileReader();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
+  const [descriptionString, setDescriptionString] = useState('');
   const [originalFileContent, setOriginalFileContent] = useState("This is the original file content...");
   const [processedFileContent, setProcessedFileContent] = useState(originalFileContent);
 
@@ -27,11 +27,11 @@ export default function Home() {
 
   const applyActiveTransformations = (inputFileContent: string) => {
     let result = inputFileContent;
-    console.log("in applyActiveTransformations");
+    // console.log("in applyActiveTransformations");
     console.time;
     transformations.forEach((transformation) => {
       if (transformation.isActive) {
-        console.log("in transformation.isActive");
+        // console.log("in transformation.isActive");
         console.time;
         result = transformation.func(result);
         console.log(result);
@@ -39,7 +39,8 @@ export default function Home() {
       }
     });
 
-    console.log(result);
+    // console.log(result);
+    setDescriptionString(generateDescription(transformations));
 
     return result;
   };
@@ -88,7 +89,7 @@ export default function Home() {
   const copyToClipboard = useCallback(async () => {
     if (processedFileContent) {
       try {
-        await navigator.clipboard.writeText(promptText + processedFileContent);
+        await navigator.clipboard.writeText(promptText + '\n' + descriptionString + '\n' + processedFileContent);
         setCopyButtonText('Copied');
         setTimeout(() => {
           setCopyButtonText('Copy');
@@ -146,28 +147,31 @@ export default function Home() {
           </div>
         </div>
         <div className="w-2/3 col2 px-4 border-l">
-          <div className="w-full h-96 overflow-scroll border border-black p-2 bg-gray-200 mb-4 relative">
-            {promptText && (
-              <p className='bg-gray-900 text-white p-2'>{promptText}</p>
-            )}
-            <p>{generateDescription(transformations)}</p>
-            {fileContent && (
-              <>
+          <div className="w-full h-96 border border-black p-2 bg-gray-200 mb-4 relative">
+            <div className="h-full overflow-scroll">
+              {promptText && (
+                <p className='bg-gray-900 text-white p-2'>{promptText}</p>
+              )}
+              {descriptionString && (
+                <p className='bg-gray-900 mt-2 mb-2 text-white p-2'>{descriptionString}</p>
+              )}
+
+              {fileContent && (
                 <div>
-                  <pre className="text-xs p-2">{processedFileContent}</pre>
+                  <pre className="whitespace-pre-wrap overflow-x-auto text-xs p-2">{processedFileContent}</pre>
                 </div>
-                <button
-                  onClick={copyToClipboard}
-                  className="absolute bottom-2 right-2 bg-white hover:bg-black hover:text-white text-black border border-black font-bold py-2 px-4"
-                >
-                  {copyButtonText}
-                </button>
-              </>
-            )}
+              )}
+            </div>
+            <button
+              onClick={copyToClipboard}
+              className="absolute bottom-2 right-2 bg-white hover:bg-black hover:text-white text-black border border-black font-bold py-2 px-4"
+            >
+              {copyButtonText}
+            </button>
           </div>
 
           <div className="w-full border border-black p-2 bg-white mb-4">
-            <p className="text-right">{getTokenCountString(`${processedFileContent}${promptText}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${processedFileContent}${promptText}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
+            <p className="text-right">{getTokenCountString(`${processedFileContent}${promptText}${descriptionString}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${processedFileContent}${promptText}${descriptionString}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {transformations.map((transformation, index) => (
