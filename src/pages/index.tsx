@@ -1,5 +1,5 @@
 import Image from 'next/image'
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Inter } from 'next/font/google'
 import useFileReader from '../pages/api/upload';
 import TokenMessage from '../components/TokenMessage';
@@ -25,16 +25,23 @@ export default function Home() {
     setPromptText(event.target.value);
   };
 
-  const applyActiveTransformations = () => {
-    let result = originalFileContent;
-
+  const applyActiveTransformations = (inputFileContent: string) => {
+    let result = inputFileContent;
+    console.log("in applyActiveTransformations");
+    console.time;
     transformations.forEach((transformation) => {
       if (transformation.isActive) {
+        console.log("in transformation.isActive");
+        console.time;
         result = transformation.func(result);
+        console.log(result);
+        console.time;
       }
     });
 
-    setProcessedFileContent(result);
+    console.log(result);
+
+    return result;
   };
 
   const handleFileUpload = async () => {
@@ -47,11 +54,19 @@ export default function Home() {
 
     const file = fileInputRef.current.files[0];
     if (file) {
+      resetTransformations();
       await processFile(file);
     } else {
       console.log('!fileInputRef!.current!.files![0] is null');
     }
   };
+
+  useEffect(() => {
+    if (fileContent !== undefined) {
+      const transformedContent = applyActiveTransformations(fileContent ?? "This is blank");
+      setProcessedFileContent(transformedContent);
+    }
+  }, [fileContent]);
 
   function getTokenCount(text: string): number {
     const characterCount = text.length;
@@ -71,9 +86,9 @@ export default function Home() {
   };
 
   const copyToClipboard = useCallback(async () => {
-    if (fileContent) {
+    if (processedFileContent) {
       try {
-        await navigator.clipboard.writeText(fileContent);
+        await navigator.clipboard.writeText(promptText+processedFileContent);
         setCopyButtonText('Copied');
         setTimeout(() => {
           setCopyButtonText('Copy');
@@ -82,32 +97,27 @@ export default function Home() {
         console.error('Failed to copy text: ', err);
       }
     }
-  }, [fileContent]);
+  }, [processedFileContent]);
+
+  const resetTransformations = () => {
+    transformations.forEach((transformation) => {
+      transformation.isActive = false;
+    });
+  };
 
 
   return (
     <div className="max-w-4xl mx-auto">
       <header className="w-full py-10 text-2xl font-light tracking-widest">
-        <h1>No vector prompt generator</h1>
+        <h1>Core Content</h1>
       </header>
       <main className="flex space-x-4">
         <div className="w-1/3 col1">
           <div className="mb-3 border-b border-gray-200 pb-3">
             <h3 className="text-lg tracking-wide">
               Select your data</h3>
-            {/* <div className="mb-2">
-              <h4>URL</h4>
-              <div className="flex items-center">
-                <input
-                  className="border border-gray-400 focus:border-black focus:border-2 w-full"
-                  type="text"
-                />
-                <button className="border px-4 py-2 border-gray-400">Get</button>
-              </div>
-            </div> */}
             <div>
               <h4>File upload</h4>
-              {/* <input type="file" ref={fileInputRef} /> */}
               <input
                 className="w-full border border-black mt-2"
                 type="file"
@@ -116,9 +126,6 @@ export default function Home() {
                 accept=".doc,.docx,.pdf,.json,.txt"
                 disabled={loading}
               />
-              {/* <button className="w-full border border-black mt-2" onClick={handleFileUpload} disabled={loading}>
-                {loading ? 'Uploading...' : 'Upload document'}
-              </button> */}
               <small className='text-xs text-right'>Allowed files: .html, .docx, .txt, .json, .pdf</small>
             </div>
           </div>
@@ -137,19 +144,15 @@ export default function Home() {
             <h3 className="text-lg tracking-wide">
               Model being used?</h3>
             <ModelSelectionRadio onModelChange={handleModelChange} />
-            {/* <div className="flex items-center mt-2">
-              <span>sanitise</span>
-              <input className="ml-2" type="checkbox" />
-            </div> */}
           </div>
         </div>
         <div className="w-2/3 col2 px-4 border-l">
           <div className="w-full h-96 overflow-scroll border border-black p-2 bg-gray-200 mb-4 relative">
-          <p className='bg-gray-900 text-white p-2'>{promptText}</p>
+            <p className='bg-gray-900 text-white p-2'>{promptText}</p>
             {fileContent && (
               <>
                 <div>
-                  <pre className="text-xs p-2">{fileContent}</pre>
+                  <pre className="text-xs p-2">{processedFileContent}</pre>
                 </div>
                 <button
                   onClick={copyToClipboard}
@@ -166,26 +169,20 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-4 gap-2">
             {transformations.map((transformation, index) => (
-              <button className="text-center p-2 border border-black"
+              <button
+                className={`text-center p-2 border ${transformation.isActive ? "bg-black text-white border-black" : "border-black"
+                  }`}
                 key={index}
                 onClick={() => {
+                  console.log("transformations.map button clicked");
                   transformation.isActive = !transformation.isActive;
-                  applyActiveTransformations();
+                  const transformedContent = applyActiveTransformations(fileContent ?? "");
+                  setProcessedFileContent(transformedContent);
                 }}
               >
                 {transformation.name}
               </button>
             ))}
-            {/* {Array(8)
-              .fill(null)
-              .map((_, i) => (
-                <div
-                  key={i}
-                  className="text-center p-2 border border-black"
-                >
-                  Change
-                </div>
-              ))} */}
           </div>
         </div>
       </main>
