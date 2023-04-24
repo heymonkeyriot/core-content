@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Buffer } from 'buffer';
 import {getDocument} from 'pdfjs-dist';
 import mammoth from 'mammoth';
 

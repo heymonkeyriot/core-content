@@ -1,7 +1,7 @@
 import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Inter } from 'next/font/google'
-import useFileReader from '../pages/api/upload';
+import useFileReader from './upload';
 import TokenMessage from '../components/TokenMessage';
 import ModelSelectionRadio from '../components/ModelSelectionRadio';
 import { transformations } from '../utils/calcs'
