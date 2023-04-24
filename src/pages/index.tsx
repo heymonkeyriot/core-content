@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google'
 import useFileReader from '../utils/upload';
 import TokenMessage from '../components/TokenMessage';
 import ModelSelectionRadio from '../components/ModelSelectionRadio';
-import { transformations } from '../utils/calcs'
+import { transformations, generateDescription } from '../utils/calcs'
 import { GPT4_TOKEN_LIMIT } from '../utils/counts';
 
 const inter = Inter({ subsets: ['latin'] })
@@ -88,7 +88,7 @@ export default function Home() {
   const copyToClipboard = useCallback(async () => {
     if (processedFileContent) {
       try {
-        await navigator.clipboard.writeText(promptText+processedFileContent);
+        await navigator.clipboard.writeText(promptText + processedFileContent);
         setCopyButtonText('Copied');
         setTimeout(() => {
           setCopyButtonText('Copy');
@@ -104,7 +104,6 @@ export default function Home() {
       transformation.isActive = false;
     });
   };
-
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -123,7 +122,7 @@ export default function Home() {
                 type="file"
                 ref={fileInputRef}
                 onChange={handleFileUpload}
-                accept=".doc,.docx,.pdf,.json,.txt"
+                accept=".doc,.docx,.pdf,.json,.txt,.html"
                 disabled={loading}
               />
               <small className='text-xs text-right'>Allowed files: .html, .docx, .txt, .json, .pdf</small>
@@ -148,7 +147,10 @@ export default function Home() {
         </div>
         <div className="w-2/3 col2 px-4 border-l">
           <div className="w-full h-96 overflow-scroll border border-black p-2 bg-gray-200 mb-4 relative">
-            <p className='bg-gray-900 text-white p-2'>{promptText}</p>
+            {promptText && (
+              <p className='bg-gray-900 text-white p-2'>{promptText}</p>
+            )}
+            <p>{generateDescription(transformations)}</p>
             {fileContent && (
               <>
                 <div>
@@ -165,7 +167,7 @@ export default function Home() {
           </div>
 
           <div className="w-full border border-black p-2 bg-white mb-4">
-            <p className="text-right">{getTokenCountString(`${fileContent}${promptText}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${fileContent}${promptText}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
+            <p className="text-right">{getTokenCountString(`${processedFileContent}${promptText}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${processedFileContent}${promptText}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
           </div>
           <div className="grid grid-cols-4 gap-2">
             {transformations.map((transformation, index) => (

@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import {getDocument} from 'pdfjs-dist';
+import { getDocument } from 'pdfjs-dist';
 import mammoth from 'mammoth';
+import cheerio from 'cheerio';
+import TurndownService from 'turndown';
 
 const useFileReader = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
@@ -30,9 +32,42 @@ const useFileReader = () => {
       case 'pdf':
         await handlePdfFile(file);
         break;
+      case 'html':
+        await handleHtmlFile(file);
+        break;
       default:
         alert('Invalid file type');
     }
+  };
+
+  const handleHtmlFile = async (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const html = event.target?.result as string;
+      const $ = cheerio.load(html);
+
+      let content;
+      if ($('article').length) {
+        content = $('article').html();
+      } else if ($('main').length) {
+        content = $('main').html();
+      } else {
+        content = $('body').html() || html;
+      }
+
+      if (content) {
+        const turndownService = new TurndownService();
+        const markdown = turndownService.turndown(content);
+        const shortenedContent = markdown.replace(/(.{30})/g, '$1 ');
+        console.log(shortenedContent);
+        setFileContent(shortenedContent);
+      } else {
+        console.error('HTML content is null');
+      }
+
+      // setFileContent(content);
+    };
+    reader.readAsText(file);
   };
 
   const handleTextFile = async (file: File) => {
