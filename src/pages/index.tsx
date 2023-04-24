@@ -1,118 +1,194 @@
 import Image from 'next/image'
+import { useState, useRef, useCallback } from 'react';
 import { Inter } from 'next/font/google'
+import useFileReader from '../pages/api/upload';
+import TokenMessage from '../components/TokenMessage';
+import ModelSelectionRadio from '../components/ModelSelectionRadio';
+import { transformations } from '../utils/calcs'
+import { GPT4_TOKEN_LIMIT } from '../utils/counts';
 
 const inter = Inter({ subsets: ['latin'] })
 
 export default function Home() {
+  const [loading, setLoading] = useState(false);
+  const [copyButtonText, setCopyButtonText] = useState('Copy');
+  const { fileContent, processFile } = useFileReader();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const [originalFileContent, setOriginalFileContent] = useState("This is the original file content...");
+  const [processedFileContent, setProcessedFileContent] = useState(originalFileContent);
+
+  const [tokenLimitValue, setTokenLimitValue] = useState(8000);
+
+  const [promptText, setPromptText] = useState('');
+  const handlePromptTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPromptText(event.target.value);
+  };
+
+  const applyActiveTransformations = () => {
+    let result = originalFileContent;
+
+    transformations.forEach((transformation) => {
+      if (transformation.isActive) {
+        result = transformation.func(result);
+      }
+    });
+
+    setProcessedFileContent(result);
+  };
+
+  const handleFileUpload = async () => {
+    console.log('Starting handleFileUpload');
+
+    if (!fileInputRef.current?.files) {
+      alert('Please select a file');
+      return;
+    }
+
+    const file = fileInputRef.current.files[0];
+    if (file) {
+      await processFile(file);
+    } else {
+      console.log('!fileInputRef!.current!.files![0] is null');
+    }
+  };
+
+  function getTokenCount(text: string): number {
+    const characterCount = text.length;
+    const tokenCount = Math.ceil(characterCount / 4);
+    return tokenCount;
+  }
+
+  function getTokenCountString(text: string): string {
+    var tokenCount = getTokenCount(text);
+    return `~ ${tokenCount} tokens`;
+  }
+
+  const tokenCount = GPT4_TOKEN_LIMIT; // Example token count value
+
+  const handleModelChange = (newTokenLimitValue: number) => {
+    setTokenLimitValue(newTokenLimitValue);
+  };
+
+  const copyToClipboard = useCallback(async () => {
+    if (fileContent) {
+      try {
+        await navigator.clipboard.writeText(fileContent);
+        setCopyButtonText('Copied');
+        setTimeout(() => {
+          setCopyButtonText('Copy');
+        }, 3000);
+      } catch (err) {
+        console.error('Failed to copy text: ', err);
+      }
+    }
+  }, [fileContent]);
+
+
   return (
-    <main
-      className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
-    >
-      <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/pages/index.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{' '}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
+    <div className="max-w-4xl mx-auto">
+      <header className="w-full py-10 text-2xl font-light tracking-widest">
+        <h1>No vector prompt generator</h1>
+      </header>
+      <main className="flex space-x-4">
+        <div className="w-1/3 col1">
+          <div className="mb-3 border-b border-gray-200 pb-3">
+            <h3 className="text-lg tracking-wide">
+              Select your data</h3>
+            {/* <div className="mb-2">
+              <h4>URL</h4>
+              <div className="flex items-center">
+                <input
+                  className="border border-gray-400 focus:border-black focus:border-2 w-full"
+                  type="text"
+                />
+                <button className="border px-4 py-2 border-gray-400">Get</button>
+              </div>
+            </div> */}
+            <div>
+              <h4>File upload</h4>
+              {/* <input type="file" ref={fileInputRef} /> */}
+              <input
+                className="w-full border border-black mt-2"
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileUpload}
+                accept=".doc,.docx,.pdf,.json,.txt"
+                disabled={loading}
+              />
+              {/* <button className="w-full border border-black mt-2" onClick={handleFileUpload} disabled={loading}>
+                {loading ? 'Uploading...' : 'Upload document'}
+              </button> */}
+              <small className='text-xs text-right'>Allowed files: .html, .docx, .txt, .json, .pdf</small>
+            </div>
+          </div>
+          <div className="mb-3 border-b border-gray-200 pb-3">
+            <h3 className="text-lg tracking-wide">
+              What do you want to know?</h3>
+            <textarea
+              onChange={handlePromptTextChange}
+              value={promptText}
+              className="w-full border border-gray-400 focus:border-black focus:border-2 mt-2 text-sm"
+              rows={4}
+              placeholder='e.g. Summarise the above data into 10 separate bullet-points that can be used within a PowerPoint presentation'
+            ></textarea>
+          </div>
+          <div>
+            <h3 className="text-lg tracking-wide">
+              Model being used?</h3>
+            <ModelSelectionRadio onModelChange={handleModelChange} />
+            {/* <div className="flex items-center mt-2">
+              <span>sanitise</span>
+              <input className="ml-2" type="checkbox" />
+            </div> */}
+          </div>
         </div>
-      </div>
+        <div className="w-2/3 col2 px-4 border-l">
+          <div className="w-full h-96 overflow-scroll border border-black p-2 bg-gray-200 mb-4 relative">
+          <p className='bg-gray-900 text-white p-2'>{promptText}</p>
+            {fileContent && (
+              <>
+                <div>
+                  <pre className="text-xs p-2">{fileContent}</pre>
+                </div>
+                <button
+                  onClick={copyToClipboard}
+                  className="absolute bottom-2 right-2 bg-white hover:bg-black hover:text-white text-black border border-black font-bold py-2 px-4"
+                >
+                  {copyButtonText}
+                </button>
+              </>
+            )}
+          </div>
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className="mb-32 grid text-center lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Discover and deploy boilerplate example Next.js&nbsp;projects.
-          </p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{' '}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  )
+          <div className="w-full border border-black p-2 bg-white mb-4">
+            <p className="text-right">{getTokenCountString(`${fileContent}${promptText}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${fileContent}${promptText}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
+          </div>
+          <div className="grid grid-cols-4 gap-2">
+            {transformations.map((transformation, index) => (
+              <button className="text-center p-2 border border-black"
+                key={index}
+                onClick={() => {
+                  transformation.isActive = !transformation.isActive;
+                  applyActiveTransformations();
+                }}
+              >
+                {transformation.name}
+              </button>
+            ))}
+            {/* {Array(8)
+              .fill(null)
+              .map((_, i) => (
+                <div
+                  key={i}
+                  className="text-center p-2 border border-black"
+                >
+                  Change
+                </div>
+              ))} */}
+          </div>
+        </div>
+      </main>
+    </div>
+  );
 }
