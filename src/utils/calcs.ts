@@ -30,10 +30,11 @@ export function removeEveryOtherParagraph(fileContent: string): string {
     return filteredParagraphs.join('\n');
 }
 
+
 export function filterVerbsAndNouns(fileContent: string): string {
     const doc = nlp(fileContent);
-    const verbsAndNouns = doc.match('(noun|verb)').out('array');
-    return verbsAndNouns.join(' ');
+    const verbsAndNouns = doc.match('#Noun|#Verb');
+    return verbsAndNouns.out('text');
 }
 
 export function truncateFileContent(fileContent: string, maxLength: number = 30000): string {

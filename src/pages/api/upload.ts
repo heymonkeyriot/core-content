@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { Buffer } from 'buffer';
-import * as pdfjsLib from 'pdfjs-dist';
+import {getDocument} from 'pdfjs-dist';
 import mammoth from 'mammoth';
 
 const useFileReader = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
 
   useEffect(() => {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+    async function setWorkerSrc() {
+      const pdfjsLib = await import('pdfjs-dist');
+      const workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+    }
+
+    setWorkerSrc();
   }, []);
 
   const processFile = async (file: File) => {
@@ -54,10 +60,10 @@ const useFileReader = () => {
     reader.onload = async (event) => {
       const buffer = event.target?.result as ArrayBuffer;
       const uint8Array = new Uint8Array(buffer);
-      const pdfDocument = await pdfjsLib.getDocument(uint8Array).promise;
+      const pdfDocument = await getDocument(uint8Array).promise;
       const totalPages = pdfDocument.numPages;
       let textContent = '';
-  
+
       for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
         const page = await pdfDocument.getPage(pageNum);
         const content = await page.getTextContent();
@@ -66,12 +72,12 @@ const useFileReader = () => {
           .map((item) => (item as any).str)
           .join(' ') + '\n';
       }
-  
+
       setFileContent(textContent);
     };
     reader.readAsArrayBuffer(file);
   };
-  
+
 
   return { fileContent, processFile };
 };
