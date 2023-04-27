@@ -1,11 +1,14 @@
-import Image from 'next/image'
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Inter } from 'next/font/google'
 import useFileReader from '../utils/upload';
-import TokenMessage from '../components/TokenMessage';
-import ModelSelectionRadio from '../components/ModelSelectionRadio';
 import { transformations, generateDescription } from '../utils/calcs'
 import { GPT4_TOKEN_LIMIT } from '../utils/counts';
+import FileUpload from '@/components/FileUpload';
+import PromptInput from '@/components/PromptInput';
+import ModelSelection from '@/components/ModelSelection';
+import ContentDisplay from '@/components/ContentDisplay';
+import TokenInfo from '@/components/TokenInfo';
+import TransformationButtons from '@/components/TransformationButtons';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -13,25 +16,16 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [copyButtonText, setCopyButtonText] = useState('Copy');
   const { fileContent, processFile } = useFileReader();
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [descriptionString, setDescriptionString] = useState('');
   const [originalFileContent, setOriginalFileContent] = useState("This is the original file content...");
   const [processedFileContent, setProcessedFileContent] = useState(originalFileContent);
-
-  const [tokenLimitValue, setTokenLimitValue] = useState(8000);
-
   const [promptText, setPromptText] = useState('');
-  const handlePromptTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setPromptText(event.target.value);
-  };
 
   const applyActiveTransformations = (inputFileContent: string) => {
     let result = inputFileContent;
-    // console.log("in applyActiveTransformations");
     console.time;
     transformations.forEach((transformation) => {
       if (transformation.isActive) {
-        // console.log("in transformation.isActive");
         console.time;
         result = transformation.func(result);
         console.log(result);
@@ -39,21 +33,21 @@ export default function Home() {
       }
     });
 
-    // console.log(result);
     setDescriptionString(generateDescription(transformations));
 
     return result;
   };
 
-  const handleFileUpload = async () => {
+  const handleFileUpload = async (file: File) => {
     console.log('Starting handleFileUpload');
+    console.log(file)
 
-    if (!fileInputRef.current?.files) {
-      alert('Please select a file');
+    if (!file) {
+      alert('Please select a file (handleFileUpload');
       return;
     }
 
-    const file = fileInputRef.current.files[0];
+    // const file = fileInputRef.current.files[0];
     if (file) {
       resetTransformations();
       await processFile(file);
@@ -69,23 +63,6 @@ export default function Home() {
     }
   }, [fileContent]);
 
-  function getTokenCount(text: string): number {
-    const characterCount = text.length;
-    const tokenCount = Math.ceil(characterCount / 4);
-    return tokenCount;
-  }
-
-  function getTokenCountString(text: string): string {
-    var tokenCount = getTokenCount(text);
-    return `~ ${tokenCount} tokens`;
-  }
-
-  const tokenCount = GPT4_TOKEN_LIMIT; // Example token count value
-
-  const handleModelChange = (newTokenLimitValue: number) => {
-    setTokenLimitValue(newTokenLimitValue);
-  };
-
   const copyToClipboard = useCallback(async () => {
     if (processedFileContent) {
       try {
@@ -98,13 +75,25 @@ export default function Home() {
         console.error('Failed to copy text: ', err);
       }
     }
-  }, [processedFileContent]);
+  }, [processedFileContent, promptText]);
 
   const resetTransformations = () => {
     transformations.forEach((transformation) => {
       transformation.isActive = false;
     });
   };
+
+  const [tokenLimitValue, setTokenLimitValue] = useState(8000);
+  const handleModelChange = (newTokenLimitValue: number) => {
+    setTokenLimitValue(newTokenLimitValue);
+  };
+
+  const handleTransformationClick = (index: number) => {
+    transformations[index].isActive = !transformations[index].isActive;
+    const transformedContent = applyActiveTransformations(fileContent ?? '');
+    setProcessedFileContent(transformedContent);
+  };
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -113,83 +102,24 @@ export default function Home() {
       </header>
       <main className="flex space-x-4">
         <div className="w-1/3 col1">
-          <div className="mb-3 border-b border-gray-200 pb-3">
-            <h3 className="text-lg tracking-wide">
-              Select your data</h3>
-            <div>
-              <h4>File upload</h4>
-              <input
-                className="w-full border border-black mt-2"
-                type="file"
-                ref={fileInputRef}
-                onChange={handleFileUpload}
-                accept=".doc,.docx,.pdf,.json,.txt,.html"
-                disabled={loading}
-              />
-              <small className='text-xs text-right'>Allowed files: .html, .docx, .txt, .json, .pdf</small>
-            </div>
-          </div>
-          <div className="mb-3 border-b border-gray-200 pb-3">
-            <h3 className="text-lg tracking-wide">
-              What do you want to know?</h3>
-            <textarea
-              onChange={handlePromptTextChange}
-              value={promptText}
-              className="w-full border border-gray-400 focus:border-black focus:border-2 mt-2 text-sm"
-              rows={4}
-              placeholder='e.g. Summarise the above data into 10 separate bullet-points that can be used within a PowerPoint presentation'
-            ></textarea>
-          </div>
-          <div>
-            <h3 className="text-lg tracking-wide">
-              Model being used?</h3>
-            <ModelSelectionRadio onModelChange={handleModelChange} />
-          </div>
+          <FileUpload onFileUpload={handleFileUpload} loading={loading} />
+          <PromptInput promptText={promptText} onPromptTextChange={setPromptText} />
+          <ModelSelection onModelChange={handleModelChange} />
         </div>
         <div className="w-2/3 col2 px-4 border-l">
-          <div className="w-full h-96 border border-black p-2 bg-gray-200 mb-4 relative">
-            <div className="h-full overflow-scroll">
-              {promptText && (
-                <p className='bg-gray-900 text-white p-2'>{promptText}</p>
-              )}
-              {descriptionString && (
-                <p className='bg-gray-900 mt-2 mb-2 text-white p-2'>{descriptionString}</p>
-              )}
+          <ContentDisplay
+            promptText={promptText}
+            descriptionString={descriptionString}
+            processedFileContent={processedFileContent}
+            onCopy={copyToClipboard}
+            copyButtonText={copyButtonText}
+          />
 
-              {fileContent && (
-                <div>
-                  <pre className="whitespace-pre-wrap overflow-x-auto text-xs p-2">{processedFileContent}</pre>
-                </div>
-              )}
-            </div>
-            <button
-              onClick={copyToClipboard}
-              className="absolute bottom-2 right-2 bg-white hover:bg-black hover:text-white text-black border border-black font-bold py-2 px-4"
-            >
-              {copyButtonText}
-            </button>
-          </div>
-
-          <div className="w-full border border-black p-2 bg-white mb-4">
-            <p className="text-right">{getTokenCountString(`${processedFileContent}${promptText}${descriptionString}` ?? "0 tokens")} • <TokenMessage count={getTokenCount(`${processedFileContent}${promptText}${descriptionString}` ?? "")} tokenLimitValue={tokenLimitValue} /></p>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {transformations.map((transformation, index) => (
-              <button
-                className={`text-center p-2 border ${transformation.isActive ? "bg-black text-white border-black" : "border-black"
-                  }`}
-                key={index}
-                onClick={() => {
-                  console.log("transformations.map button clicked");
-                  transformation.isActive = !transformation.isActive;
-                  const transformedContent = applyActiveTransformations(fileContent ?? "");
-                  setProcessedFileContent(transformedContent);
-                }}
-              >
-                {transformation.name}
-              </button>
-            ))}
-          </div>
+          <TokenInfo text={`${processedFileContent}${promptText}${descriptionString}`} tokenLimitValue={tokenLimitValue} />
+          <TransformationButtons
+            transformations={transformations}
+            onTransformationClick={handleTransformationClick}
+          />
         </div>
       </main>
     </div>
