@@ -10,7 +10,7 @@ interface ModelSelectionProps {
 const ModelSelection: React.FC<ModelSelectionProps> = ({ onModelChange }) => {
 
     return (
-        <div>
+        <div className="mb-3 border-b border-gray-200 pb-3">
             <h3 className="text-lg tracking-wide">
                 Model being used?</h3>
             <ModelSelectionRadio onModelChange={onModelChange} />

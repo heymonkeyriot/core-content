@@ -2,13 +2,14 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { Inter } from 'next/font/google'
 import useFileReader from '../utils/upload';
 import { transformations, generateDescription } from '../utils/calcs'
-import { GPT4_TOKEN_LIMIT } from '../utils/counts';
 import FileUpload from '@/components/FileUpload';
 import PromptInput from '@/components/PromptInput';
 import ModelSelection from '@/components/ModelSelection';
 import ContentDisplay from '@/components/ContentDisplay';
 import TokenInfo from '@/components/TokenInfo';
 import TransformationButtons from '@/components/TransformationButtons';
+import RedactRows from '@/components/RedactRows';
+import RedactRowItem, { RedactRow } from '@/components/RedactRowItem';
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -94,6 +95,10 @@ export default function Home() {
     setProcessedFileContent(transformedContent);
   };
 
+  const handleRedact = (newText: string) => {
+    setProcessedFileContent(newText);
+};
+
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -105,6 +110,7 @@ export default function Home() {
           <FileUpload onFileUpload={handleFileUpload} loading={loading} />
           <PromptInput promptText={promptText} onPromptTextChange={setPromptText} />
           <ModelSelection onModelChange={handleModelChange} />
+          <RedactRows onRedact={handleRedact} text={processedFileContent} />
         </div>
         <div className="w-2/3 col2 px-4 border-l">
           <ContentDisplay
