@@ -21,12 +21,11 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
   };
 
   return (
-    <div className="mb-3 border-b border-gray-200 pb-3">
+    <div className="mb-3 border-b border-teal pb-3">
       <h3 className="text-lg tracking-wide">Select your data</h3>
       <div>
-        <h4>File upload</h4>
         <input
-          className="w-full border border-black mt-2"
+          className="w-full border border-teal mt-2"
           type="file"
           ref={fileInputRef}
           onChange={handleChange}

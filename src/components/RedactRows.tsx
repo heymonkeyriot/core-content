@@ -50,20 +50,21 @@ const RedactRows: React.FC<RedactRowsProps> = ({ onRedact, text }) => {
     };
 
     return (
-        <div className="mb-3 border-b border-gray-200 pb-3">
+        <div className="mb-3 border-b border-teal pb-3">
             <h3 className="text-lg tracking-wide">Redact</h3>
             {rows.map((row, index) => (
                 <div key={row.id} className="flex space-x-1 mb-2 items-start">
                     <input
                         type="text"
-                        className={`flex-1 ${searchInputStyle(row.searchString, row.replaceString)} border w-12`}
+                        
+                        className={`flex-1 ${searchInputStyle(row.searchString, row.replaceString)} border w-12 bg-darkBlue border-teal`}
                         placeholder="Search"
                         value={row.searchString}
                         onChange={(e) => handleChange(index, 'searchString', e.target.value)}
                     />
                     <input
                         type="text"
-                        className="flex-1 border w-12"
+                        className="flex-1 border w-12 bg-darkBlue border-teal text-teal"
                         placeholder="Replace"
                         value={row.replaceString}
                         onChange={(e) => handleChange(index, 'replaceString', e.target.value)}
@@ -71,16 +72,16 @@ const RedactRows: React.FC<RedactRowsProps> = ({ onRedact, text }) => {
                     <button
                         onClick={() => handleButtonClick(index)}
                         disabled={!isSearchStringFound(row.searchString, row.replaceString, text)}
-                        className={`w-10 p-2 border ${!isSearchStringFound(row.searchString, row.replaceString, text) ? 'bg-gray-300 text-gray-500' : 'bg-black border-black text-white'}`}
+                        className={`w-10 p-2 border ${!isSearchStringFound(row.searchString, row.replaceString, text) ? 'bg-accent-400 text-accent-500 border-teal' : 'bg-teal border-teal text-darkBlue'}`}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
                         </svg>
 
                     </button>
                 </div>
             ))}
-            {replaceMessage && <p className="text-sm text-gray-600">{replaceMessage}</p>}
+            {replaceMessage && <p className="text-sm text-accent-600">{replaceMessage}</p>}
         </div>
     );
 };

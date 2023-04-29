@@ -59,7 +59,7 @@ export default function Home() {
 
   useEffect(() => {
     if (fileContent !== undefined) {
-      const transformedContent = applyActiveTransformations(fileContent ?? "This is blank");
+      const transformedContent = applyActiveTransformations(fileContent ?? "Upload a file to begin");
       setProcessedFileContent(transformedContent);
     }
   }, [fileContent]);
@@ -103,7 +103,7 @@ export default function Home() {
   return (
     <div className="max-w-4xl mx-auto">
       <header className="w-full py-10 text-2xl font-light tracking-widest">
-        <h1>Core Content</h1>
+        <h1>Redact + Reduce</h1>
       </header>
       <main className="flex space-x-4">
         <div className="w-1/3 col1">
@@ -112,7 +112,7 @@ export default function Home() {
           <ModelSelection onModelChange={handleModelChange} />
           <RedactRows onRedact={handleRedact} text={processedFileContent} />
         </div>
-        <div className="w-2/3 col2 px-4 border-l">
+        <div className="w-2/3 col2 px-4 border-l border-teal">
           <ContentDisplay
             promptText={promptText}
             descriptionString={descriptionString}

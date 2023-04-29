@@ -21,7 +21,7 @@ const getTokenCountString = (text: string): string => {
 
 const TokenInfo: React.FC<TokenInfoProps> = ({ text, tokenLimitValue }) => {
   return (
-    <div className="w-full border border-black p-2 bg-white mb-4">
+    <div className="w-full border border-teal p-2 mb-4">
       <p className="text-right">
         {getTokenCountString(text)} •{' '}
         <TokenMessage count={getTokenCount(text)} tokenLimitValue={tokenLimitValue} />

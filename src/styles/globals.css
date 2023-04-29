@@ -2,3 +2,23 @@
 @tailwind components;
 @tailwind utilities;
 
+
+::placeholder{
+    color: #355b73!important;
+    opacity: 1;
+}
+
+[type='radio']:checked {
+    @apply bg-teal text-teal;
+    background-image: none;
+}
+
+[type='radio']{
+    @apply bg-darkBlue border-teal;
+}
+
+:focus {
+    /* color: #3BECCD!important; */
+    border-color: #3BECCD!important;
+    border-width: 1px;
+}

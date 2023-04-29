@@ -17,7 +17,7 @@ const ModelSelectionRadio: React.FC<ModelSelectionRadioProps> = ({ onModelChange
 
   return (
     <div className='grid gap-2 grid-cols-2'>
-      <label>
+      <label className="radio-container">
         <input
           type="radio"
           value="GPT4"
@@ -26,7 +26,7 @@ const ModelSelectionRadio: React.FC<ModelSelectionRadioProps> = ({ onModelChange
         />
         <span className='pl-2'>GPT4</span>
       </label>
-      <label>
+      <label className="radio-container">
         <input
           type="radio"
           value="GPT3.5"

@@ -58,14 +58,13 @@ const useFileReader = () => {
       if (content) {
         const turndownService = new TurndownService();
         const markdown = turndownService.turndown(content);
-        const shortenedContent = markdown.replace(/(.{30})/g, '$1 ');
-        console.log(shortenedContent);
-        setFileContent(shortenedContent);
+        // const shortenedContent = markdown.replace(/(.{30})/g, '$1 ');
+        console.log(markdown);
+        setFileContent(markdown);
       } else {
         console.error('HTML content is null');
       }
 
-      // setFileContent(content);
     };
     reader.readAsText(file);
   };
