@@ -19,7 +19,7 @@ const TransformationButtons: React.FC<TransformationButtonsProps> = ({
       {transformations.map((transformation, index) => (
         <button
           className={`text-center p-2 border ${
-            transformation.isActive ? 'bg-black text-white border-teal' : 'border-teal'
+            transformation.isActive ? 'bg-teal text-darkBlue border-teal' : 'border-teal'
           }`}
           key={index}
           onClick={() => onTransformationClick(index)}
