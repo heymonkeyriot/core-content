@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Inter } from 'next/font/google'
+import { Courier_Prime } from 'next/font/google'
 import useFileReader from '../utils/upload';
 import { transformations, generateDescription } from '../utils/calcs'
 import FileUpload from '@/components/FileUpload';
@@ -12,6 +13,7 @@ import RedactRows from '@/components/RedactRows';
 import RedactRowItem, { RedactRow } from '@/components/RedactRowItem';
 
 const inter = Inter({ subsets: ['latin'] })
+const courierPrime = Courier_Prime({ weight: '400', style: 'normal', subsets: ['latin'] });
 
 export default function Home() {
   const [loading, setLoading] = useState(false);
@@ -21,6 +23,9 @@ export default function Home() {
   const [originalFileContent, setOriginalFileContent] = useState("This is the original file content...");
   const [processedFileContent, setProcessedFileContent] = useState(originalFileContent);
   const [promptText, setPromptText] = useState('');
+  const [onFirstLoad, setOnFirstLoad] = useState(true);
+
+  const onFirstLoadMessage = "This is an app built to explore how best to preprocess data before sending them to Large Language Models. It enables you to redact sensitive information and experiment with how much content can be reduced without losing it's meaning. \n\nUpload a file to begin."
 
   const applyActiveTransformations = (inputFileContent: string) => {
     let result = inputFileContent;
@@ -50,6 +55,7 @@ export default function Home() {
 
     // const file = fileInputRef.current.files[0];
     if (file) {
+      setOnFirstLoad(false);
       resetTransformations();
       await processFile(file);
     } else {
@@ -59,7 +65,7 @@ export default function Home() {
 
   useEffect(() => {
     if (fileContent !== undefined) {
-      const transformedContent = applyActiveTransformations(fileContent ?? "Upload a file to begin");
+      const transformedContent = applyActiveTransformations(fileContent ?? onFirstLoadMessage);
       setProcessedFileContent(transformedContent);
     }
   }, [fileContent]);
@@ -97,23 +103,24 @@ export default function Home() {
 
   const handleRedact = (newText: string) => {
     setProcessedFileContent(newText);
-};
+  };
 
 
   return (
     <div className="max-w-4xl mx-auto">
-      <header className="w-full py-10 text-2xl font-light tracking-widest">
-        <h1>Redact + Reduce</h1>
+      <header className="w-full p-10 md:p-0 md:py-10 text-3xl font-mono tracking-widest">
+        <h1 className={courierPrime.className}>Redact + Reduce</h1>
       </header>
-      <main className="flex space-x-4">
-        <div className="w-1/3 col1">
+      <main className="p-10 md:p-0 md:flex md:space-x-4">
+        <div className="w-full md:w-1/3 col1">
           <FileUpload onFileUpload={handleFileUpload} loading={loading} />
           <PromptInput promptText={promptText} onPromptTextChange={setPromptText} />
           <ModelSelection onModelChange={handleModelChange} />
           <RedactRows onRedact={handleRedact} text={processedFileContent} />
         </div>
-        <div className="w-2/3 col2 px-4 border-l border-teal">
+        <div className="w-full md:w-2/3 col2 md:px-4 md:border-l border-teal">
           <ContentDisplay
+            onFirstLoad={onFirstLoad}
             promptText={promptText}
             descriptionString={descriptionString}
             processedFileContent={processedFileContent}
@@ -123,6 +130,7 @@ export default function Home() {
 
           <TokenInfo text={`${processedFileContent}${promptText}${descriptionString}`} tokenLimitValue={tokenLimitValue} />
           <TransformationButtons
+            onFirstLoad={onFirstLoad}
             transformations={transformations}
             onTransformationClick={handleTransformationClick}
           />

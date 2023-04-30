@@ -1,5 +1,5 @@
-export const GPT4_TOKEN_LIMIT = 8000;
-export const GPT3_5_TOKEN_LIMIT = 2500;
+export const GPT4_TOKEN_LIMIT = 3950;
+export const GPT3_5_TOKEN_LIMIT = 1850;
 
 export enum TokenLimitMessage {
   FAR_BELOW = 'Far below token limit',

@@ -2,9 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-
-::placeholder{
-    color: #355b73!important;
+/* note Tailwind has .placeholder- class but this allows us 
+   to apply the style globally */
+::placeholder {
+    color: #355b73 !important;
     opacity: 1;
 }
 
@@ -13,12 +14,37 @@
     background-image: none;
 }
 
-[type='radio']{
+[type='radio'] {
     @apply bg-darkBlue border-teal;
 }
 
 :focus {
-    /* color: #3BECCD!important; */
-    border-color: #3BECCD!important;
+    border-color: #3BECCD !important;
     border-width: 1px;
+}
+
+.transformations button {
+    position: relative;
+    overflow: visible;
+}
+
+.transformations button .tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #3BECCD;
+    color: #251757;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 150ms;
+    pointer-events: none;
+    margin-bottom: 8px;
+}
+
+.transformations button:hover .tooltip {
+    opacity: 1;
 }

@@ -4,6 +4,7 @@ interface ContentDisplayProps {
   promptText: string;
   descriptionString: string;
   processedFileContent: string;
+  onFirstLoad: boolean;
   onCopy: () => void;
   copyButtonText: string;
 }
@@ -12,6 +13,7 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({
   promptText,
   descriptionString,
   processedFileContent,
+  onFirstLoad,
   onCopy,
   copyButtonText,
 }) => {
@@ -25,13 +27,16 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({
 
         {processedFileContent && (
           <div>
-            <pre className="whitespace-pre-wrap overflow-x-auto text-xs p-2">{processedFileContent}</pre>
+            <pre className=
+            { onFirstLoad == false ? "whitespace-pre-wrap overflow-x-auto text-xs p-2"
+            : "whitespace-pre-wrap overflow-x-auto text-base leading-relaxed p-2"}
+            >{processedFileContent}</pre>
           </div>
         )}
       </div>
       <button
         onClick={onCopy}
-        className="absolute bottom-2 right-2 hover:bg-teal hover:text-darkBlue border border-teal font-bold py-2 px-4"
+        className="absolute bottom-2 right-2 bg-darkBlue hover:bg-teal hover:text-darkBlue border border-teal font-bold py-2 px-4"
       >
         {copyButtonText}
       </button>
