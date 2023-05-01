@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { Inter } from 'next/font/google'
+import Link from 'next/link';
+import { useState, useEffect, useCallback } from 'react';
 import { Courier_Prime } from 'next/font/google'
 import useFileReader from '../utils/upload';
 import { transformations, generateDescription } from '../utils/calcs'
@@ -10,9 +10,6 @@ import ContentDisplay from '@/components/ContentDisplay';
 import TokenInfo from '@/components/TokenInfo';
 import TransformationButtons from '@/components/TransformationButtons';
 import RedactRows from '@/components/RedactRows';
-import RedactRowItem, { RedactRow } from '@/components/RedactRowItem';
-
-const inter = Inter({ subsets: ['latin'] })
 const courierPrime = Courier_Prime({ weight: '400', style: 'normal', subsets: ['latin'] });
 
 export default function Home() {
@@ -107,16 +104,17 @@ export default function Home() {
 
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <header className="w-full p-10 md:p-0 md:py-10 text-3xl font-mono tracking-widest">
-        <h1 className={courierPrime.className}>Redact + Reduce</h1>
+    <>
+    <div className="max-w-4xl mx-auto mb-24">
+      <header className="w-full p-10 md:p-0 md:py-10 flex justify-between items-center">
+        <h1 className={courierPrime.className + " text-3xl tracking-widest"}>Redact + Reduce</h1>
+        <Link href='/' className={courierPrime.className + " underline underline-offset-4 pr-6"}>About</Link>
       </header>
       <main className="p-10 md:p-0 md:flex md:space-x-4">
         <div className="w-full md:w-1/3 col1">
           <FileUpload onFileUpload={handleFileUpload} loading={loading} />
           <PromptInput promptText={promptText} onPromptTextChange={setPromptText} />
           <ModelSelection onModelChange={handleModelChange} />
-          <RedactRows onRedact={handleRedact} text={processedFileContent} />
         </div>
         <div className="w-full md:w-2/3 col2 md:px-4 md:border-l border-teal">
           <ContentDisplay
@@ -129,13 +127,28 @@ export default function Home() {
           />
 
           <TokenInfo text={`${processedFileContent}${promptText}${descriptionString}`} tokenLimitValue={tokenLimitValue} />
+        </div>
+
+      </main>
+      <div className='px-10 md:p-0 md:flex md:gap-4'>
+        <div className='w-full md:w-1/3'>
+          <RedactRows onRedact={handleRedact} text={processedFileContent} />
+        </div>
+        <div className='md:flex-grow pl-6'>
           <TransformationButtons
             onFirstLoad={onFirstLoad}
             transformations={transformations}
             onTransformationClick={handleTransformationClick}
           />
         </div>
-      </main>
+      </div>
     </div>
+    <footer className={'w-full px-10 md:p-2 fixed bottom-0 bg-darkBlue ' + courierPrime.className}>
+      <div className=' max-w-4xl mx-auto md:flex md:justify-between'>
+        <p className=''>A <Link className="underline underline-offset-2" href="https://ai.torchbox.com.">Torchbox Innovation</Link> project</p>
+        <p className='text-sm'>No cookies used in this project</p>
+      </div>
+    </footer>
+    </>
   );
 }
