@@ -20,9 +20,9 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({
   return (
     <div className="w-full h-96 border border-teal p-2 mb-4 relative">
       <div className="h-full overflow-scroll">
-        {promptText && <p className="bg-teal text-darkBlue p-2">{promptText}</p>}
+        {promptText && <p className="bg-teal absolute w-full text-darkBlue p-2">{promptText}</p>}
         {descriptionString && (
-          <p className="bg-teal mt-2 mb-2 text-darkBlue p-2">{descriptionString}</p>
+          <p className="bg-teal mt-2 mb-2 absolute w-full text-darkBlue p-2">{descriptionString}</p>
         )}
 
         {processedFileContent && (
