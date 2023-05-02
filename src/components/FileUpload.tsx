@@ -1,7 +1,6 @@
 //FileUpload.tsx
 // Note 2023-05-01 The namespacing made more sense when it was only a file being uploaded
 // rather than a URL also being requested.
-import useFileReader from '@/utils/upload';
 import React, { useEffect, useRef, useState } from 'react';
 
 interface FileUploadProps {

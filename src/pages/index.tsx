@@ -1,25 +1,25 @@
 import Link from 'next/link';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Courier_Prime } from 'next/font/google'
 import useFileReader from '../utils/upload';
 import { transformations, generateDescription } from '../utils/calcs'
-import FileUpload from '@/components/FileUpload';
-import PromptInput from '@/components/PromptInput';
-import ModelSelection from '@/components/ModelSelection';
-import ContentDisplay from '@/components/ContentDisplay';
-import TokenInfo from '@/components/TokenInfo';
-import TransformationButtons from '@/components/TransformationButtons';
-import RedactRows from '@/components/RedactRows';
-import AboutProject from '@/components/AboutProject';
-import CustomHead from '@/components/CustomHeadProps';
+const FileUpload = lazy(() => import('@/components/FileUpload'));
+const PromptInput = lazy(() => import('@/components/PromptInput'));
+const ModelSelection = lazy(() => import('@/components/ModelSelection'));
+const ContentDisplay = lazy(() => import('@/components/ContentDisplay'));
+const TokenInfo = lazy(() => import('@/components/TokenInfo'));
+const TransformationButtons = lazy(() => import('@/components/TransformationButtons'));
+const RedactRows = lazy(() => import('@/components/RedactRows'));
+const AboutProject = lazy(() => import('@/components/AboutProject'));
+const CustomHead = lazy(() => import('@/components/CustomHeadProps'));
 const courierPrime = Courier_Prime({ weight: '400', style: 'normal', subsets: ['latin'] });
 
 export default function Home() {
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [copyButtonText, setCopyButtonText] = useState('Copy');
   const { fileContent, processFile } = useFileReader();
   const [descriptionString, setDescriptionString] = useState('');
-  const [originalFileContent, setOriginalFileContent] = useState("This is the original file content...");
+  const [originalFileContent] = useState("");
   const [processedFileContent, setProcessedFileContent] = useState(originalFileContent);
   const [promptText, setPromptText] = useState('');
   const [onFirstLoad, setOnFirstLoad] = useState(true);
@@ -81,7 +81,7 @@ export default function Home() {
         console.error('Failed to copy text: ', err);
       }
     }
-  }, [processedFileContent, promptText]);
+  }, [descriptionString, processedFileContent, promptText]);
 
   const resetTransformations = () => {
     transformations.forEach((transformation) => {
@@ -107,6 +107,7 @@ export default function Home() {
 
   return (
     <>
+    <Suspense fallback={<div>Loading...</div>}></Suspense>
       <CustomHead
         title="Redact + Reduce"
         description="An experiment in how content can be redacted and reduced before being used in large language models."

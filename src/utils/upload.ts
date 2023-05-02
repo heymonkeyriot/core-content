@@ -1,21 +1,10 @@
-import { useState, useEffect } from 'react';
-import { getDocument } from 'pdfjs-dist';
+import { useState } from 'react';
 import mammoth from 'mammoth';
 import cheerio from 'cheerio';
 import TurndownService from 'turndown';
 
 const useFileReader = () => {
   const [fileContent, setFileContent] = useState<string | null>(null);
-
-  useEffect(() => {
-    async function setWorkerSrc() {
-      const pdfjsLib = await import('pdfjs-dist');
-      const workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-    }
-
-    setWorkerSrc();
-  }, []);
 
   const processFile = async (file: File) => {
     const fileExtension = file.name.split('.').pop()?.toLowerCase();
@@ -89,10 +78,23 @@ const useFileReader = () => {
   };
 
   const handlePdfFile = async (file: File) => {
+    async function setWorkerSrc() {
+      const pdfjsLib = await import('pdfjs-dist');
+      const workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.js`;
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+    }
+
+    // Set workerSrc before processing the PDF file
+    await setWorkerSrc();
+
     const reader = new FileReader();
     reader.onload = async (event) => {
       const buffer = event.target?.result as ArrayBuffer;
       const uint8Array = new Uint8Array(buffer);
+
+      // Dynamic import of pdfjs-dist
+      const { getDocument } = await import('pdfjs-dist');
+
       const pdfDocument = await getDocument(uint8Array).promise;
       const totalPages = pdfDocument.numPages;
       let textContent = '';
@@ -110,6 +112,8 @@ const useFileReader = () => {
     };
     reader.readAsArrayBuffer(file);
   };
+
+
 
 
   return { fileContent, processFile };
