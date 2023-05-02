@@ -2,7 +2,7 @@
 // Note 2023-05-01 The namespacing made more sense when it was only a file being uploaded
 // rather than a URL also being requested.
 import useFileReader from '@/utils/upload';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 interface FileUploadProps {
   onFileUpload: (file: File) => void;
@@ -40,7 +40,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
     return (
       <>
 
-        <div className='border border-teal p-2 '>
+        <div className='border border-teal p-2  h-20'>
           <input
             className="hidden w-full border border-teal mt-2"
             type="file"
@@ -65,25 +65,50 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
       </>)
   }
 
+  function delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   function RedactURLfetch({ onFileUpload }: RedactURLfetchProps) {
     const [loading, setLoading] = useState(false);
     const [disabled, setDisabled] = useState(false);
-    const { processFile } = useFileReader();
     const [url, setUrl] = useState('');
+    const [isValidUrl, setIsValidUrl] = useState(true);
+
+    const urlPattern = /^https?:\/\/.+$/;
+
+    const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
     const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const inputValue = event.target.value;
-      const urlPattern = /^https?:\/\/.+$/;
 
-      if (urlPattern.test(inputValue)) {
-        setUrl(inputValue);
-      } else {
-        alert('Please enter a valid URL.');
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
       }
+
+      debounceRef.current = setTimeout(() => {
+        if (urlPattern.test(inputValue)) {
+          setIsValidUrl(true);
+        } else {
+          setIsValidUrl(false);
+        }
+      }, 500); // debounce time in ms
+
+      setUrl(inputValue);
     };
+
+    // Clean up the debounce timeout on component unmount
+    useEffect(() => {
+      return () => {
+        if (debounceRef.current) {
+          clearTimeout(debounceRef.current);
+        }
+      };
+    }, []);
 
     const fetchAndParseURL = async (url: string) => {
       setLoading(true);
+      setDisabled(true);
 
       try {
         const proxyURL = `/api/proxy?url=${encodeURIComponent(url)}`;
@@ -92,21 +117,14 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
 
         const file = new File([html], 'url-content.html', { type: 'text/html' });
         onFileUpload(file);
-
+        await delay(25000);
       } catch (error) {
         console.error('Error fetching and parsing URL:', error);
       }
 
-      // Set the loading state to false after a minimum of 5 seconds
-      setTimeout(() => {
-        setLoading(false);
-      }, 5000);
-
-      // Disable the button for 30 seconds
-      setDisabled(true);
-      setTimeout(() => {
-        setDisabled(false);
-      }, 30000);
+      await delay(25000);
+      setLoading(false)
+      setDisabled(false);
     };
 
     const activeURLButton = "bg-teal border-teal text-darkBlue";
@@ -114,30 +132,28 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, loading }) => {
 
 
     return (
-      <>
-
-        <div
-          className={loading || disabled ? inactiveURLButton : activeURLButton}>
+      <div className="border border-teal p-2 h-20 flex items-center">
+        <div className="flex flex-grow items-center">
           <input
             type="text"
-            className="flex-1 border bg-darkBlue border-teal text-teal md:col-span-2"
+            className={`flex-grow bg-darkBlue ${isValidUrl ? 'border-teal' : 'border-red'} border-2 text-teal`}
             placeholder="https://"
             value={url}
             onChange={handleUrlChange}
           />
           <button
-            className="bg-teal border-teal text-darkBlue"
+            className={` text-darkBlue p-1 h-11 items-center justify-center ${loading && disabled ?
+              inactiveURLButton :
+              isValidUrl ?
+                activeURLButton : inactiveURLButton
+              }`}
             onClick={() => fetchAndParseURL(url)}
-            disabled={loading || disabled}
+            disabled={loading && disabled && isValidUrl}
           >
-            {
-              loading || disabled ? (
-                inactiveURLIcon()) : (
-                activeURLIcon())
-            }
+            {loading && disabled ? inactiveURLIcon() : activeURLIcon()}
           </button>
         </div>
-      </>)
+      </div>)
   }
 
   return (
@@ -175,13 +191,13 @@ export default FileUpload;
 
 
 function activeURLIcon() {
-  return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+  return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
     <path strokeLinecap="round" strokeLinejoin="round" d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 }
 
 function inactiveURLIcon() {
-  return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+  return <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8">
     <path strokeLinecap="round" strokeLinejoin="round" d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 }

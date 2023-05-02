@@ -1,7 +1,7 @@
 {
-    "name": "Torchbox, Innovation and AI",
+    "name": "Redact + Reduce by Torchbox Innovation",
     "short_name": "Torchbox AI",
-    "description": "Working together with nonprofits, charities and social innovators to understand how Large Language Models will change the world.",
+    "description": "An experiment in how content can be preprocessed before being used within large language models.",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",

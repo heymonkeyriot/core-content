@@ -52,12 +52,12 @@ const RedactRows: React.FC<RedactRowsProps> = ({ onRedact, text }) => {
     };
 
     return (
-        <div className="mb-3 border-b border-teal pb-3">
+        <div className="mb-3 pt-4 pb-3 border-t border-teal">
             <h3 className={"text-lg tracking-wide mb-2 " + courierPrime.className}>Redact</h3>
             {rows.map((row, index) => (
                 <div
                     key={row.id}
-                    className="md:grid md:grid-cols-2 md:gap-1 mb-2 items-start"
+                    className="md:grid md:grid-cols-2 md:gap-2 mb-2 items-start"
                 >
                     <input
                         type="text"
@@ -100,7 +100,7 @@ const RedactRows: React.FC<RedactRowsProps> = ({ onRedact, text }) => {
                 </div>
             ))}
 
-            {replaceMessage && <p className="text-sm text-accent-600">{replaceMessage}</p>}
+            {replaceMessage && <p className="text-sm text-teal">{replaceMessage}</p>}
         </div>
     );
 };

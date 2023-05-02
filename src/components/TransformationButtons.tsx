@@ -31,11 +31,11 @@ const TransformationButtons: React.FC<TransformationButtonsProps> = ({
 
   return (
     <>
-      <div className='flex justify-between'>
+      <div className='flex justify-between pt-4 border-t border-teal'>
         <h3 className={"text-lg tracking-wide mb-2 " + courierPrime.className}>Reduce tokens</h3>
         <h3 className={"text-lg tracking-wide mb-2 " + courierPrime.className}>Chars</h3>
       </div>
-      <div className="transformations grid grid-flow-col grid-rows-2 gap-4">
+      <div className="transformations grid grid-flow-col grid-rows-2 gap-2">
         {sortedTransformations.map((transformation, index) => (
 
           <button
