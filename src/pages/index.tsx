@@ -13,7 +13,6 @@ const RedactRows = lazy(() => import('@/components/RedactRows'));
 const AboutProject = lazy(() => import('@/components/AboutProject'));
 const CustomHead = lazy(() => import('@/components/CustomHeadProps'));
 const courierPrime = Courier_Prime({ weight: '400', style: 'normal', subsets: ['latin'] });
-import LazyLoad from './LazyLoad';
 
 export default function Home() {
   const [loading] = useState(false);
@@ -108,14 +107,13 @@ export default function Home() {
 
   return (
     <>
-    <LazyLoad fallback={<div>Loading CustomHead...</div>}>
+
       <CustomHead
         title="Redact + Reduce"
         description="An experiment in how content can be redacted and reduced before being used in large language models."
         ogImage="https://redactreduce.com/reduce-redact-image.jpg"
         twitterImage="https://redactreduce.com/reduce-redact-image.jpg"
       />
-      </LazyLoad>
       <div className={`${showAbout ? '' : 'hidden'} backdrop-blur-sm h-screen w-full absolute z-20`}></div>
       <div className="max-w-4xl mx-auto mb-24">
         <header className="w-full p-10 md:p-0 md:py-10 flex justify-between items-center">
