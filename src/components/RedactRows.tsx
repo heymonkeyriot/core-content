@@ -81,6 +81,7 @@ const RedactRows: React.FC<RedactRowsProps> = ({ onRedact, text }) => {
                                 ? "bg-accent-400 text-accent-500 border-teal"
                                 : "bg-teal border-teal text-darkBlue"
                             } md:col-span-1`}
+                            aria-label="Redact text"
                     >
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
