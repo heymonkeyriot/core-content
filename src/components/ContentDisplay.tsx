@@ -20,17 +20,30 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({
   return (
     <div className="w-full h-96 border border-teal p-2 mb-4 relative">
       <div className="h-full overflow-scroll">
-        {promptText && <p className="bg-teal absolute w-full text-darkBlue p-2">{promptText}</p>}
-        {descriptionString && (
-          <p className="bg-teal mt-2 mb-2 absolute w-full text-darkBlue p-2">{descriptionString}</p>
-        )}
-
+        <div className='bg-darkBlue pb-1 top-0 sticky'>
+          {promptText && (
+            <p className="bg-teal text-darkBlue p-2">{promptText}</p>
+          )}
+          {descriptionString && (
+            <p
+              className="bg-teal mt-0 mb-2 text-darkBlue p-2"
+              style={{ marginTop: promptText ? '0.5rem' : '0' }}
+            >
+              {descriptionString}
+            </p>
+          )}
+        </div>
         {processedFileContent && (
           <div>
-            <pre className=
-            { onFirstLoad == false ? "whitespace-pre-wrap overflow-x-auto text-xs p-2"
-            : "whitespace-pre-wrap overflow-x-auto text-base leading-relaxed p-2"}
-            >{processedFileContent}</pre>
+            <pre
+              className={
+                (onFirstLoad === false
+                  ? 'whitespace-pre-wrap overflow-x-auto text-xs p-2'
+                  : 'whitespace-pre-wrap overflow-x-auto text-base leading-relaxed p-2')
+              }
+            >
+              {processedFileContent}
+            </pre>
           </div>
         )}
       </div>
@@ -41,6 +54,7 @@ const ContentDisplay: React.FC<ContentDisplayProps> = ({
         {copyButtonText}
       </button>
     </div>
+
   );
 };
 
